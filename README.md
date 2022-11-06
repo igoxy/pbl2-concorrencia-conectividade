@@ -61,7 +61,7 @@ Executar o shell script:
 </p>
 
 ```bash
-$ sudo chmod +x run-docker-servidor.sh    #Atribui a permissão de execução do script
+$ sudo chmod +x run-servidor.sh           #Atribui a permissão de execução do script
 $ ./run-servidor.sh                       #Executa o script
 ```
 <br>
