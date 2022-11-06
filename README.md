@@ -105,14 +105,11 @@ $ ./run-hidrometro-<opção desejada>.sh                  #Executa o script
 Ao iniciar a aplicação será solicitado três informações via terminal. Primeiramente será solicitada a matrícula do hidrômetro. Posteriormente será solicitado o nome do cliente relacionado ao hidrômetro. Depois será solicitado a identificação da névoa em que o hidrômetro deve se conectar. Por fim, é solicitado o endereço do Broker que o hidrômetro deve se conectar via MQTT.
 </p>
 
-<br>
 <h2  id="interface">Interface do Administrador</h2>
 
 <p  align="justify">
 A interface é uma aplicação desktop que consome a API permitindo visualizar as informações dos hidrômetros em tempo real, visualizar os dados de um hidrômetro com a menor latência possível e enviar o consumo máximo permitido em um intervalo de tempo definido pelo administrador.
 </p>
-<br>
-<br>
 
 <h3  id="exeinterface">Como executar</h3>
 
@@ -135,20 +132,15 @@ $ ./run-interface.sh                  #Executa o script
 Ao iniciar a interface será solicitado o endereço (IP) do servidor da API. Com isso, a interface pode solicitar os dados da API e enviar os comandos para o hidrômetro.
 </p>
 <br>
-<br>
 
 <h2  id="nevoa">Névoa</h2>
 <p  align="justify">
 A névoa é um servidor intermediário entre o hidrômetro e a nuvem. É na névoa em que os dados dos hidrômetros são armazenados, assim quando alguma solicitação é efeita na API da nuvem, as informações são solicitadas a névoa e então a resposta da API é fornecida.
 </p>
-<br>
-<br>
 
 <p align="justify">
 Temos três pastas para as névoas: Nevoa, Nevoa2 e Nevoa3. Essencialmente, todas as três pastas apresentam o mesmo código a única diferença entre eles são os usuário cadastrados em cada uma das névoas. A névoa da pasta Nevoa apresenta as matrículas de 001 até 004; a névoa da pasta Nevoa2 apresenta as matrículas 005 até 008 e a névoa da pasta Nevoa3 apresenta as matrículas de 009 até 012. Isso foi feito apenas para facilitar os testes, porém podem ser cadastrados outros usuários da névoas, lembrando de cadastrar os mesmos usuários também no servidor da nuvem e modificar o intervalo de matrículas para cada uma das névoas informado na nuvem.
 </p>
-<br>
-<br>
 
 <h3  id="exenevoa">Como executar</h3>
 <p  align="justify">
@@ -169,7 +161,6 @@ $ ./run-nevoa.sh                  #Executa o script
 <p  align="justify">
 Ao iniciar a névoa será solicitado a identificação da névoa. Posteriomente será solicitado o endereço do Broker MQTT que a névoa deve se conectar.
 </p>
-<br>
 <br>
 <h2 id="discente">Discentes</h2>
 
