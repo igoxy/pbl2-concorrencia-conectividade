@@ -131,7 +131,6 @@ $ ./run-interface.sh                  #Executa o script
 <p  align="justify">
 Ao iniciar a interface será solicitado o endereço (IP) do servidor da API. Com isso, a interface pode solicitar os dados da API e enviar os comandos para o hidrômetro.
 </p>
-<br>
 
 <h2  id="nevoa">Névoa</h2>
 <p  align="justify">
@@ -161,7 +160,7 @@ $ ./run-nevoa.sh                  #Executa o script
 <p  align="justify">
 Ao iniciar a névoa será solicitado a identificação da névoa. Posteriomente será solicitado o endereço do Broker MQTT que a névoa deve se conectar.
 </p>
-<br>
+
 <h2 id="discente">Discentes</h2>
 
 - Igor Figueredo Soares
