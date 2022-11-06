@@ -98,8 +98,8 @@ Executar o shell script:
 </p>
 
 ```bash
-$ sudo chmod +x run-docker-hidrometro-<opção desejada>.sh      #Atribui a permissão de execução do script
-$ ./run-docker-hidrometro-<opção desejada>.sh                  #Executa o script
+$ sudo chmod +x run-hidrometro-<opção desejada>.sh      #Atribui a permissão de execução do script
+$ ./run-hidrometro-<opção desejada>.sh                  #Executa o script
 ```
 <h3 id="confighidro">Configurações iniciais</h3>
 <p  align="justify">
