@@ -1,4 +1,4 @@
-<h1  align="center">Problema 1 - Consumo Inteligente de Água </h1>
+<h1  align="center">Problema 2 - Consumo Inteligente de Água (continuação)</h1>
 
 <p  align="center">
 TEC502 - MI - Concorrência e Conectividade
@@ -18,7 +18,10 @@ TEC502 - MI - Concorrência e Conectividade
 • <a  href="#interface">Interface</a> <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <a  href="#exeinterface">  Como executar</a> <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <a  href="#configinterface"> Configurações iniciais</a> <br>
-• <a  href="#discente">Discente</a> <br>
+• <a  href="#nevoa">Névoa</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <a  href="#exenevoa"> Como executar</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <a  href="#confignevoa"> Configurações iniciais</a> <br>
+• <a  href="#discente">Discentes</a> <br>
 </p>
 
 <h2  id="tec" >🛠 Tecnologias </h2>
@@ -31,9 +34,9 @@ TEC502 - MI - Concorrência e Conectividade
 
 - Biblioteca Tkinter
 
-- Biblioteca Requests (utilizado apenas na interface)
+- Biblioteca Requests
 
-- Framework Flask (utilizado apenas na interface)
+- Framework Flask
 
 - Docker
 
@@ -41,10 +44,7 @@ TEC502 - MI - Concorrência e Conectividade
 <h2  id="api">Servidor da API</h2>
 
 <p  align="justify">
-O servidor da API é responsável por receber os dados dos hidrômetros, tratá-los e armazená-los para fornecer via API. Ao receber um dado o servidor salva no banco de dados no formato csv. Cada hidrômetro tem o seu próprio arquivo csv de dados.
-<br>
-<br>
-Com os dados armazenados, os mesmos podem ser fornecidos via API. Para isso, o servidor dispõe de 11 endpoints, sendo 3 endpoints para executar as ações, tais como, gerar fatura de um cliente, bloquear um cliente com fatura em aberto e receber o pagamento de uma fatura. Os 8 endpoints restantes são responsáveis por fornecer informações aos clientes, listar os clientes e validar login no sistema.
+O servidor da API é responsável por receber as requisições, identificar a névoa que dispõe das informações e fornecer a resposta para requisição.
 <br>
 </p>
 
@@ -62,22 +62,30 @@ Executar o shell script:
 
 ```bash
 $ sudo chmod +x run-docker-servidor.sh    #Atribui a permissão de execução do script
-$ ./run-docker-servidor.sh                #Executa o script
+$ ./run-servidor.sh                       #Executa o script
 ```
 <br>
+<p  align="justify">
+Ao iniciar o servidor será solicitado o endereço do Broker ao qual o sistema deve se conectar.
+</p>
 <h2  id="hidrometro">Hidrômetro</h2>
 
 <p  align="justify">
-O hidrômetro apresenta uma interface para controlar a vazão de água e a pressão. A vazão diz a respeito do consumo de água do cliente. Enquanto que a pressão indica se há um possível vazamento. Caso a pressão esteja abaixo de 1 bar e a vazão esteja em 0 m³/s, significa que há um possível vazamento de água no endereço, então um alerta é emitido.
+O hidrômetro pode receber por parâmetro um indicador se deve consumir mais ou menos água e se deve simular um vazamento.
 <br>
 <br>
-Os dados computados pelo hidrômetro são enviados para o servidor da API que processa e armazena as informações para serem consultadas posteriormente via API. Além disso, o hidrômetro também pode receber comandos do servidor da API para ser desligado, caso algum cliente esteja inadimplente e um administrador bloqueie o fornecimento de água do mesmo. Já caso um hidrômetro apresente-se desligado e o cliente pague o débito pendente, o hidrômetro é desbloqueado automaticamente.
+Os dados computados pelo hidrômetro são enviados para o névoa que processa e armazena as informações para serem consultadas posteriormente via API. Além disso, o hidrômetro também pode receber comandos do servidor da API para ser desligado, caso algum cliente esteja inadimplente e um administrador bloqueie o fornecimento de água do mesmo. Já caso um hidrômetro apresente-se desligado e o cliente pague o débito pendente, o hidrômetro é desbloqueado automaticamente. <br>
+<br>
+Além disso, o hidrômetro pode ser desligado caso o seu consumo exceda a média de consumo de todos os hidrômetros ou ainda se consumir uma certa quantidade de água em um determinado intervalo de tempo.
+<br>
+<br>
+São disponibilizadas 4 pastas para os hidrômetros: hidrometro-lento, hidrometro-medio, hidrometro-rapido e hidrometro-vazamentos. Todas apresentam o mesmo código, apenas dispõe de Dockerfiles diferentes no que se refere ao parâmetro passado ao iniciar o hidrômetro. Isso é apenas para facilitar o processo de instância de um novo hidrômetro.
 </p>
 
 <h3  id="exehidro">Como executar</h3>
 
 <p  align="justify">
-Com o docker instalado no dispositivo, basta acessar a pasta <strong>hidrometro</strong> via terminal e executar o shell script (run-docker-hidrometro.sh) disponível na pasta. O script criará a imagem docker a partir do Dockerfile e inicializará o container em modo interativo.
+Com o docker instalado no dispositivo, basta acessar a pasta <strong>hidrometro-&lt;opção desejada&gt;</strong> via terminal e executar o shell script (run-hidrometro-&lt;opção desejada&gt;.sh) disponível na pasta. O script criará a imagem docker a partir do Dockerfile e inicializará o container em modo interativo.
 <br>
 <br>
 Caso deseje obter a imagem docker a partir do Docker Hub ao invés do Dockerfile, basta abrir o shell script e seguir os passos indicados dentro do mesmo para efetuar tal ação. 
@@ -87,32 +95,27 @@ Executar o shell script:
 </p>
 
 ```bash
-$ sudo chmod +x run-docker-hidrometro.sh      #Atribui a permissão de execução do script
-$ ./run-docker-hidrometro.sh                  #Executa o script
+$ sudo chmod +x run-docker-hidrometro-<opção desejada>.sh      #Atribui a permissão de execução do script
+$ ./run-docker-hidrometro-<opção desejada>.sh                  #Executa o script
 ```
 <h3 id="confighidro">Configurações iniciais</h3>
 <p  align="justify">
-Ao iniciar a aplicação será solicitado três informações via terminal. Primeiramente será solicitado o endereço (IP) do servidor da API, de modo que o hidrômetro possa enviar seus dados para o servidor. A segunda informação solicitada será a matrícula do hidrômetro (somente números) e por fim, o nome do cliente referente aquele hidrômetro.
+Ao iniciar a aplicação será solicitado três informações via terminal. Primeiramente será solicitada a matrícula do hidrômetro. Posteriormente será solicitado o nome do cliente relacionado ao hidrômetro. Depois será solicitado a identificação da névoa em que o hidrômetro deve se conectar. Por fim, é solicitado o endereço do Broker que o hidrômetro deve se conectar via MQTT.
 </p>
 
 <br>
-<h2  id="interface">Interface</h2>
+<h2  id="interface">Interface do Administrador</h2>
 
 <p  align="justify">
-A interface é uma aplicação web que consome a API permitindo visualizar as informações dos clientes e enviar comandos para o hidrômetro. 
-<br>
-<br>
-A interface é dividida em três partes, a primeira é referente a área do administrador, onde é possível ver a lista de clientes cadastrados no sistema, gerar a fatura de cada um deles e desligar o fornecimento de água, caso apresentem faturas em aberto. </p>
-
-<p>A segunda parte é a área do cliente, onde é possível verificar o consumo e obter a fatura. </p>
-
-<p>Por fim, a terceira parte é referente ao pagamento de faturas, onde ao fornecer a matrícula do cliente, se houver fatura em aberto, a fatura é quitada. Além disso, caso o fornecimento de água esteja suspenso o mesmo é retornado. 
+A interface é uma aplicação desktop que consome a API permitindo visualizar as informações dos hidrômetros em tempo real, visualizar os dados de um hidrômetro com a menor latência possível e enviar o consumo máximo permitido em um intervalo de tempo definido pelo administrador.
 </p>
+<br>
+<br>
 
 <h3  id="exeinterface">Como executar</h3>
 
 <p  align="justify">
-Com o docker instalado no dispositivo, basta acessar a pasta <strong>interface</strong> via terminal e executar o shell script (run-docker-interface.sh) disponível na pasta. O script criará a imagem docker a partir do Dockerfile e inicializará o container em modo interativo.
+Com o docker instalado no dispositivo, basta acessar a pasta <strong>interface-adm</strong> via terminal e executar o shell script (run-interface.sh) disponível na pasta. O script criará a imagem docker a partir do Dockerfile e inicializará o container em modo interativo.
 <br>
 <br>
 Caso deseje obter a imagem docker a partir do Docker Hub ao invés do Dockerfile, basta abrir o shell script e seguir os passos indicados dentro do mesmo para efetuar tal ação. 
@@ -122,16 +125,51 @@ Executar o shell script:
 </p>
 
 ```bash
-$ sudo chmod +x run-docker-interface.sh      #Atribui a permissão de execução do script
-$ ./run-docker-interface.sh                  #Executa o script
+$ sudo chmod +x run-interface.sh      #Atribui a permissão de execução do script
+$ ./run-interface.sh                  #Executa o script
 ```
 <h3 id="configinterface">Configurações iniciais</h3>
 <p  align="justify">
-Ao iniciar o servidor da interface será solicitado o endereço (IP) do servidor da API. Com isso, o servidor da interface pode solicitar os dados da API e enviar os comandos para o hidrômetro.
+Ao iniciar a interface será solicitado o endereço (IP) do servidor da API. Com isso, a interface pode solicitar os dados da API e enviar os comandos para o hidrômetro.
+</p>
 <br>
 <br>
+
+<h2  id="nevoa">Névoa</h2>
+<p  align="justify">
+A névoa é um servidor intermediário entre o hidrômetro e a nuvem. É na névoa em que os dados dos hidrômetros são armazenados, assim quando alguma solicitação é efeita na API da nuvem, as informações são solicitadas a névoa e então a resposta da API é fornecida.
+</p>
+<br>
+<br>
+
+<p align="justify">
+Temos três pastas para as névoas: Nevoa, Nevoa2 e Nevoa3. Essencialmente, todas as três pastas apresentam o mesmo código a única diferença entre eles são os usuário cadastrados em cada uma das névoas. A névoa da pasta Nevoa apresenta as matrículas de 001 até 004; a névoa da pasta Nevoa2 apresenta as matrículas 005 até 008 e a névoa da pasta Nevoa3 apresenta as matrículas de 009 até 012. Isso foi feito apenas para facilitar os testes, porém podem ser cadastrados outros usuários da névoas, lembrando de cadastrar os mesmos usuários também no servidor da nuvem e modificar o intervalo de matrículas para cada uma das névoas informado na nuvem.
+</p>
+<br>
+<br>
+
+<h3  id="exenevoa">Como executar</h3>
+<p  align="justify">
+Com o docker instalado no dispositivo, basta acessar a pasta <strong>Nevoa</strong> via terminal e executar o shell script (run-nevoa.sh) disponível na pasta. O script criará a imagem docker a partir do Dockerfile e inicializará o container em modo interativo.
+<br>
+<br>
+Caso deseje obter a imagem docker a partir do Docker Hub ao invés do Dockerfile, basta abrir o shell script e seguir os passos indicados dentro do mesmo para efetuar tal ação.
+<br>
+<br>
+Executar o shell script:
 </p>
 
-<h2 id="discente">Discente</h2>
+```bash
+$ sudo chmod +x run-nevoa.sh      #Atribui a permissão de execução do script
+$ ./run-nevoa.sh                  #Executa o script
+```
+<h3 id="confignevoa">Configurações iniciais</h3>
+<p  align="justify">
+Ao iniciar a névoa será solicitado a identificação da névoa. Posteriomente será solicitado o endereço do Broker MQTT que a névoa deve se conectar.
+</p>
+<br>
+<br>
+<h2 id="discente">Discentes</h2>
 
 - Igor Figueredo Soares
+- Lokisley Oliveira
