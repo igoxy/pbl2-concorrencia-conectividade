@@ -12,6 +12,7 @@ TEC502 - MI - Concorrência e Conectividade
 • <a  href="#tec">Tecnologias</a> <br>
 • <a  href="#api">Servidor da API</a> <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <a  href="#apiexe"> Como executar</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <a  href="#configservidor"> Configurações iniciais</a> <br>
 • <a  href="#hidrometro">Hidrômetro</a> <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <a  href="#exehidro"> Como executar</a> <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <a  href="#confighidro"> Configurações iniciais</a> <br>
@@ -65,6 +66,8 @@ $ sudo chmod +x run-servidor.sh           #Atribui a permissão de execução do
 $ ./run-servidor.sh                       #Executa o script
 ```
 <br>
+
+<h3 id="configservidor">Configurações iniciais</h3>
 <p  align="justify">
 Ao iniciar o servidor será solicitado o endereço do Broker ao qual o sistema deve se conectar.
 </p>
