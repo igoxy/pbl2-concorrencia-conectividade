@@ -65,7 +65,6 @@ Executar o shell script:
 $ sudo chmod +x run-servidor.sh           #Atribui a permissão de execução do script
 $ ./run-servidor.sh                       #Executa o script
 ```
-<br>
 
 <h3 id="configservidor">Configurações iniciais</h3>
 <p  align="justify">
