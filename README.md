@@ -158,7 +158,7 @@ $ ./run-nevoa.sh                  #Executa o script
 ```
 <h3 id="confignevoa">Configurações iniciais</h3>
 <p  align="justify">
-Ao iniciar a névoa será solicitado a identificação da névoa. Posteriomente será solicitado o endereço do Broker MQTT que a névoa deve se conectar.
+Ao iniciar a névoa será solicitado a identificação da névoa. Posteriormente será solicitado o endereço do Broker MQTT que a névoa deve se conectar.
 </p>
 
 <h2 id="discente">Discentes</h2>
