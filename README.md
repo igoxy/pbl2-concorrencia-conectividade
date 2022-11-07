@@ -41,7 +41,6 @@ TEC502 - MI - Concorrência e Conectividade
 
 - Docker
 
-<br>
 <h2  id="api">Servidor da API</h2>
 
 <p  align="justify">
