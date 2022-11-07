@@ -80,7 +80,7 @@ Os dados computados pelo hidrômetro são enviados para o névoa que processa e 
 Além disso, o hidrômetro pode ser desligado caso o seu consumo exceda a média de consumo de todos os hidrômetros ou ainda se consumir uma certa quantidade de água em um determinado intervalo de tempo.
 <br>
 <br>
-São disponibilizadas 4 pastas para os hidrômetros: hidrometro-lento, hidrometro-medio, hidrometro-rapido e hidrometro-vazamentos. Todas apresentam o mesmo código, apenas dispõe de Dockerfiles diferentes no que se refere ao parâmetro passado ao iniciar o hidrômetro. Isso é apenas para facilitar o processo de instância de um novo hidrômetro.
+São disponibilizadas 4 pastas para os hidrômetros: hidrometro-lento, hidrometro-medio, hidrometro-rapido e hidrometro-vazamento. Todas apresentam o mesmo código, apenas dispõe de Dockerfiles diferentes no que se refere ao parâmetro passado ao iniciar o hidrômetro. Isso é apenas para facilitar o processo de instância de um novo hidrômetro.
 </p>
 
 <h3  id="exehidro">Como executar</h3>
