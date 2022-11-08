@@ -42,7 +42,6 @@ class ApiServidor():
         self.__host = host
         self.__port = port
         self.__broker = broker
-        #self.run_api_flask(self.app)        # Inica o servidor Flask para as requisições dos hidrômetros de maiores consumos
 
         self.__server_socket_tcp = socket.socket(
             socket.AF_INET, socket.SOCK_STREAM)     # Criando o socket
