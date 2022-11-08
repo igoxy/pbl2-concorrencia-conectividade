@@ -8,7 +8,8 @@ import socket
 import pandas as pd
 import threading
 import requests
-
+from time import sleep
+import urllib.request
 
 
 class ApiNuvem():
@@ -62,7 +63,7 @@ class ApiNuvem():
                 self.__colecao_threads[cliente].daemon = True
                 self.__colecao_threads[cliente].start()
         except Exception as ex:
-            print("Erro no servidor", ex.args)
+            print("Erro no servidor. Causa:", ex.args)
             self.__server_socket_tcp.close()
 
     def __requisicao(self, conexao):
@@ -246,6 +247,7 @@ class ApiNuvem():
                         enviar_resposta(conexao, resposta)                          # Envia a mensagem de resultado da ação
                 else:
                     resposta = f"HTTP/1.1 {self.NOT_ACCEPTABLE}\n\n{informacoes_request[-1]}"   # Envia um mensagem de método não suportado e retorna o conteúdo da mensagem recebida
+                    print(f"Entrou aqui. {str(informacoes_request[1]).upper()}")
                     conexao.sendall(resposta.encode())
                     conexao.close()
             else:
@@ -304,7 +306,7 @@ class ObterDados():
     LOGIN_ADM = '/LOGIN_ADM'                                    # GET   -   NÃO MUDOU
     LOGIN_USUARIO = '/LOGIN_USUARIO'                            # GET   -   NÃO MUDOU
 
-    ADM_OBTER_HIDROMETROS_MAIOR_CONSUMO = '/ADMINISTRADOR/MAIOR_CONSUMO'     # GET - TESTAR
+    ADM_OBTER_HIDROMETROS_MAIOR_CONSUMO = '/maior_consumo' #'/ADMINISTRADOR/MAIOR_CONSUMO'     # GET - TESTAR
     
     # ------ MQTT -------
     HOST = ''                   # Endereço do broker - broker.emqx.io
@@ -319,7 +321,6 @@ class ObterDados():
         """ Construtor da classe ObterDados"""
         self.HOST = broker
         self.cliente = self.__connect_mqtt()
-        #self.cliente.loop_start()
         self.__matricula = matricula
         self.__endereco_requisicao = self.__get_endereco_requisicao()
 
@@ -329,7 +330,7 @@ class ObterDados():
         """ Método responsável por bloquear hidrômetro de um cliente """
         try:
             if (self.__endereco_requisicao != self.INTERNAL_SERVER_ERROR):
-                resposta = requests.post(self.__endereco_requisicao + self.ADM_DESLIGAR_CLIENTE, json=dados)
+                resposta = requests.post(self.__endereco_requisicao + self.ADM_DESLIGAR_CLIENTE, json=dados)    # Solicita o desligamento do cliente para a névoa responsável pelo mesmo
                 return str(resposta.status_code)
             else:
                 return self.INTERNAL_SERVER_ERROR
@@ -342,7 +343,7 @@ class ObterDados():
         try:
             if (self.__endereco_requisicao != self.INTERNAL_SERVER_ERROR):
                 dados = {'matricula': self.__matricula}
-                resposta = requests.post(self.__endereco_requisicao + self.SYS_RECEBER_PAGAMENTO, json=dados)
+                resposta = requests.post(self.__endereco_requisicao + self.SYS_RECEBER_PAGAMENTO, json=dados)   # Envia informação de fatura paga para névoa responsável pelo cliente
                 return str(resposta.status_code)
             else:
                 return self.INTERNAL_SERVER_ERROR
@@ -352,29 +353,29 @@ class ObterDados():
     def possiveis_vazamentos(self):
         """ Método responsável por obter os locais com possíveis vazamentos """
         try:
-            arquivo = open('nevoas-conectadas.bin', 'rb')
-            nevoas = pickle.load(arquivo)
-            arquivo.close()
-            dicionario_vazamentos = {}
+            arquivo = open('nevoas-conectadas.bin', 'rb')       # Abre o arquivo de névoas conectadas
+            nevoas = pickle.load(arquivo)                       # Obtém as névoas conectadas em um dicionário
+            arquivo.close()                                     # Fecha o arquivo de névoas conectadas
+            dicionario_vazamentos = {}                          
             indice = 0
-            for endereco in nevoas.values():
-                resposta = requests.get(f'http://{endereco}:5051' + self.ADM_VAZAMENTOS)
-                if (resposta.status_code == 200):
-                    dados = json.loads(resposta.content.decode())
-                    for dado in dados.values():
-                        dicionario_vazamentos[indice] = dado
-                        indice += 1                         # Soma 1 ao indice
-            vazamentos_json = json.dumps(dicionario_vazamentos)
-            return vazamentos_json
-        except Exception as ex:
-            print(f'erro: {ex.args}')
-            return self.INTERNAL_SERVER_ERROR
+            for endereco in nevoas.values():                    # Percorre o dicionário de névoas conectadas obtendo os endereços das névoas
+                resposta = requests.get(f'http://{endereco}:5051' + self.ADM_VAZAMENTOS)    # Solicita os possíveis vazamentos de cada névoa
+                if (resposta.status_code == 200):                                           # Verifica se recebeu os resultados corretamente
+                    dados = json.loads(resposta.content.decode())                           # Converte os dados recebidos em json
+                    for dado in dados.values():                                             # Percorre cada dado de possível vazamento recebido
+                        dicionario_vazamentos[indice] = dado                                # Adiciona os possíveis vazamentos a um dicionário
+                        indice += 1                                                         # Soma 1 ao indice              
+            vazamentos_json = json.dumps(dicionario_vazamentos)                             # Converte o dicionário com todos os possíveis vazamentos de todas as névoas para json
+            return vazamentos_json                                                          # Retonar os possíveis vazamentos como json
+        except Exception as ex:                                                             # Se ocorrer algum erro
+            print(f'Erro ao obter os possíveis vazamentos. Causa: {ex.args}')               # Informa a causa
+            return self.INTERNAL_SERVER_ERROR                                               # Retorna um erro
     
     def consumo_data_hora(self, dados):
         """ Método responsável por retornar o consumo de um cliente em um período de tempo """
         try:
             if (self.__endereco_requisicao != self.INTERNAL_SERVER_ERROR):
-                resposta = requests.get(self.__endereco_requisicao + self.USER_CONSUMO_DATA_HORARIO, json=dados)
+                resposta = requests.get(self.__endereco_requisicao + self.USER_CONSUMO_DATA_HORARIO, json=dados)       # Requisita o consumo do cliente no intervalo definido de acordo com a névoa que se encontra
                 if (resposta.status_code == 200):
                     return resposta.content.decode()
                 else:
@@ -389,9 +390,7 @@ class ObterDados():
         try:
             if (self.__endereco_requisicao != self.INTERNAL_SERVER_ERROR):
                 dados = {'matricula': self.__matricula}
-                print(f'dados enviados{dados}')
-                resposta = requests.get(self.__endereco_requisicao + self.USER_CONSUMO_TOTAL, json=dados)
-                print(f"requisição: {self.__endereco_requisicao + self.USER_CONSUMO_TOTAL}")
+                resposta = requests.get(self.__endereco_requisicao + self.USER_CONSUMO_TOTAL, json=dados)   # Requisita o consumo total do cliente de acordo com a névoa que se encontra
                 if (resposta.status_code == 200):
                     return resposta.content.decode()
                 else:
@@ -405,7 +404,7 @@ class ObterDados():
         try:
             if (self.__endereco_requisicao != self.INTERNAL_SERVER_ERROR):
                 dados = {'matricula': self.__matricula}
-                resposta = requests.get(self.__endereco_requisicao + self.USER_CONSUMO_ATUAL, json=dados)
+                resposta = requests.get(self.__endereco_requisicao + self.USER_CONSUMO_ATUAL, json=dados)   # Requisita o consumo da fatura atual do cliente de acordo com a névoa que se encontra
                 if (resposta.status_code == 200):
                     return resposta.content.decode()
                 else:
@@ -420,7 +419,7 @@ class ObterDados():
         try:
             if (self.__endereco_requisicao != self.INTERNAL_SERVER_ERROR):
                 dados = {'matricula': self.__matricula}
-                resposta = requests.post(self.__endereco_requisicao + self.ADM_GERAR_FATURA, json=dados)
+                resposta = requests.post(self.__endereco_requisicao + self.ADM_GERAR_FATURA, json=dados)    # Requisita a fatura do cliente de acordo com a névoa que se encontra
                 if (resposta == 200):
                     return resposta.content.decode()
                 else:
@@ -439,7 +438,6 @@ class ObterDados():
                 if (resposta.status_code == 200):
                     return resposta.content.decode()
                 else:
-                    print(f'status: {resposta.status_code}')
                     return str(resposta.status_code)
             else:
                 return self.INTERNAL_SERVER_ERROR
@@ -461,27 +459,32 @@ class ObterDados():
     
     def hidrometros_maior_consumo(self, dados: dict):
         try:
+            headers = {'Content-type': 'application/json'}
             quantidade = int(dados['quantidade'])
-            
+            dados_s = json.dumps(dados)
             arquivo = open('nevoas-conectadas.bin', 'rb')
             nevoas = pickle.load(arquivo)
             arquivo.close()
             dicionario_n_maiores = {}
             indice = 0
             for endereco in nevoas.values():
-                resposta = requests.get(f'http://{endereco}:5051' + self.ADM_OBTER_HIDROMETROS_MAIOR_CONSUMO, json=dados)   # Obtem os n maiores valores da nevoa
+                req = requests.Request('GET', f'http://{endereco}:5000{self.ADM_OBTER_HIDROMETROS_MAIOR_CONSUMO}/{quantidade}') # Define a requisição
+                r = req.prepare()                                                                                               # Prepara a requisição
+                s = requests.Session()                                                                                          # Inicia uma sessão
+                resposta = s.send(r)                                                                                            # Envia a requisição para API
+                s.close()                                                                                                       # Fecha a sessão
                 if (resposta.status_code == 200):                                                                           # Verifica se recebeu corretamente       
                     n_maiores = json.loads(resposta.content.decode())                                                       # Converte json recebido em dicionario
                     for dado in n_maiores.values():                                                                         # Percorre por meio dos valores o dicionario do n maiores consumos da nevoa
                         dicionario_n_maiores[indice] = dado                                                                 # Adiciona o valor a um dicionário auxiliar
-                        indice += 1                         # Soma 1 ao indice
+                        indice += 1                                                                     # Soma 1 ao indice
             total_n_maiores = json.dumps(dicionario_n_maiores)                                          # Converte o dicionario com os n maiores valores de cada nevoa em um json
             df = pd.read_json(total_n_maiores, orient='index')                                          # Carrega um dataframe a partir do json com os n maiores valores de cada nevoa
             resultado_n_maiores = df.nlargest(quantidade, ['consumo'])                                  # Obtém os n maiores valores de consumo
             json_n_maiores = resultado_n_maiores.to_json(orient='index')                                # Converte os n maiores valores de consumo em um json para enviar a resposta
             return json_n_maiores                                           # Retorna o json com os maiores consumo - as matriculas estão no formato int (sem os zeros a frente)
         except Exception as ex:
-            print(f'erro: {ex.args}')
+            print(f'Erro ao obter os hidrômetros de maior consumo. Causa: {ex.args}')
             return self.INTERNAL_SERVER_ERROR
 
     def monitorar_hidrometro(self):

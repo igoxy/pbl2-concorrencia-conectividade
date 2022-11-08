@@ -34,9 +34,6 @@ def add_usuarios():
         df = pd.DataFrame(usuarios, columns=['matricula', 'nome', 'cpf', 'ativo', 'pendencia', 'endereco', 'possivelVazamento'])
         df.to_csv('usuarios.csv', sep=',', index=False)
 
-#def carregar_nevoas():
-""" Carrega as informações das nevoas referentes aos hidrômetros que cada uma comporta """
-
 add_usuarios() # Criar os usuários do sistema
 ult_consumo_clientes = carregar_consumo()   # Carrega o ultimo consumo dos usuarios da nevoa
 
@@ -48,8 +45,9 @@ calculo_media = threading.Thread(target=servidor.calcular_media)
 
 api = ApiServidor('', 5051, broker)             # Cria o sevidor da API
 servidor_api = threading.Thread(target=api.start) 
+flask_app = api.app
+servidor_flask= threading.Thread(target=api.run_api_flask, args=([flask_app]))
 
 servidor_api.start()
 calculo_media.start()       # Inicia a thread para calcular a média
-
-input("tecle enter para sair\n")
+servidor_flask.start()

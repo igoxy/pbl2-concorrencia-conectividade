@@ -9,11 +9,14 @@ import socket
 import pandas as pd
 from pandas import DataFrame
 import threading
+from flask import Flask
 
 
 
 class ApiServidor():
     """ Classe do servidor da API """
+    app = Flask(__name__)
+
     # ---------- Mensagens ----------
     NOT_FOUND =             ('404')
     NOT_ACCEPTABLE =        ('406')
@@ -22,19 +25,16 @@ class ApiServidor():
     NOT_IMPLEMENTED =       ('501')
 
     # ---------- Rotas ----------
-    ADM_GERAR_FATURA = '/ADMINISTRADOR/GERAR_FATURA'            # POST  -   OK
-    ADM_VAZAMENTOS = '/ADMINISTRADOR/VAZAMENTOS'                # GET   -   OK
-    ADM_DESLIGAR_CLIENTE = '/ADMINISTRADOR/DESLIGAR_CLIENTE'    # POST  -   OK
-    SYS_RECEBER_PAGAMENTO = '/PAGAMENTO/RECEBER'                # POST  -   OK
-    USER_CONSUMO_DATA_HORARIO = '/CLIENTE/CONSUMO/DATA_HORARIO' # GET   -   OK
-    USER_CONSUMO_TOTAL = '/CLIENTE/CONSUMO/TOTAL'               # GET   -   OK
-    USER_CONSUMO_ATUAL = '/CLIENTE/CONSUMO/FATURA_ATUAL'        # GET   -   OK
-    USER_OBTER_FATURA = '/CLIENTE/OBTER_FATURA'                 # GET   -   OK
-    LISTAR_CLIENTES = '/LISTAR_CLIENTES'                        # GET   -   OK 
-
-
-    ADM_OBTER_HIDROMETROS_MAIOR_CONSUMO = '/ADMINISTRADOR/MAIOR_CONSUMO'     # GET - OK
-    ADM_MONITORAR_HIDROMETRO = '/ADMINISTRADOR/MONITORAR_HIDROMETRO'         # GET - OK
+    ADM_GERAR_FATURA = '/ADMINISTRADOR/GERAR_FATURA'                    # POST  -   OK
+    ADM_VAZAMENTOS = '/ADMINISTRADOR/VAZAMENTOS'                        # GET   -   OK
+    ADM_DESLIGAR_CLIENTE = '/ADMINISTRADOR/DESLIGAR_CLIENTE'            # POST  -   OK
+    SYS_RECEBER_PAGAMENTO = '/PAGAMENTO/RECEBER'                        # POST  -   OK
+    USER_CONSUMO_DATA_HORARIO = '/CLIENTE/CONSUMO/DATA_HORARIO'         # GET   -   OK
+    USER_CONSUMO_TOTAL = '/CLIENTE/CONSUMO/TOTAL'                       # GET   -   OK
+    USER_CONSUMO_ATUAL = '/CLIENTE/CONSUMO/FATURA_ATUAL'                # GET   -   OK
+    USER_OBTER_FATURA = '/CLIENTE/OBTER_FATURA'                         # GET   -   OK
+    LISTAR_CLIENTES = '/LISTAR_CLIENTES'                                # GET   -   OK 
+    ADM_MONITORAR_HIDROMETRO = '/ADMINISTRADOR/MONITORAR_HIDROMETRO'    # GET   -   OK
 
     __colecao_threads = {}              # Pool de threads
 
@@ -42,9 +42,22 @@ class ApiServidor():
         self.__host = host
         self.__port = port
         self.__broker = broker
+        #self.run_api_flask(self.app)        # Inica o servidor Flask para as requisições dos hidrômetros de maiores consumos
 
         self.__server_socket_tcp = socket.socket(
-            socket.AF_INET, socket.SOCK_STREAM)  # Criando o socket
+            socket.AF_INET, socket.SOCK_STREAM)     # Criando o socket
+
+    @app.route('/maior_consumo/<quantidade>', methods=['GET'])
+    def get_maiores_consumo(quantidade):
+        executar = ObterDados('', '')
+        resposta = executar.hidrometros_maior_consumo({"quantidade": quantidade})
+        if (resposta != '500'):
+            return resposta
+        else:
+            return {}
+
+    def run_api_flask(self, flask):
+        flask.run(host='0.0.0.0', debug=False)
 
     def start(self):
         """ Inicia o servidor da API """
@@ -76,14 +89,10 @@ class ApiServidor():
                 print("Erro ao enviar a respota. Causa: ", ex.args)
         
         try:
-            request = conexao.recv(1024).decode()                       # Decofica a mensagem recebida
+            request = conexao.recv(4096).decode()                       # Decofica a mensagem recebida
             informacoes_request = self.__decode_requisicao(request)     # Obtém as informações da requisição
             if (str(informacoes_request[1]).upper() == self.ADM_VAZAMENTOS or str(informacoes_request[1]).upper() == self.LISTAR_CLIENTES):    # Verifica se a solicitação foi na rota de obter áreas possíveis vazamentos ou listar clientes
                 executar = ObterDados('', self.__broker)                                       # Se sim, cria o objeto para obter os dados sem uma matrícula associada
-
-            elif (str(informacoes_request[1]).upper() == self.ADM_OBTER_HIDROMETROS_MAIOR_CONSUMO):       # Verifica se a rota requisitada foi de login de adm
-                dados = json.loads(informacoes_request[-1])                     # Converte os dados recebidos da requisição em dicionário
-                executar = ObterDados('', self.__broker)                                       # Cria o objeto para obter os dados
             else:                                                               # Senão
                 dados = json.loads(informacoes_request[-1])                     # Converte os dados recebidos da requisição em dicionário                      
                 executar = ObterDados(str(dados['matricula']).zfill(3), self.__broker)         # Cria o objeto para obter os dados com a matrícula do usuário enviado na solicitação
@@ -161,18 +170,6 @@ class ApiServidor():
                     except:
                         resposta = f"HTTP/1.1 {self.INTERNAL_SERVER_ERROR}\n\n"     # Envia a mensagem de resposta informando o erro
                         enviar_resposta(conexao, resposta)                          # Envia a mensagem de resultado da ação
-                elif (str(informacoes_request[1]).upper() == self.ADM_OBTER_HIDROMETROS_MAIOR_CONSUMO):
-                    try:
-                        resultado = executar.hidrometros_maior_consumo(dados)           # Obtém os N hidrometros de maior consumo da nevoa
-                        if (resultado != self.INTERNAL_SERVER_ERROR):
-                            resposta = f"HTTP/1.1 200\n\n{resultado}"                   # Gera um resposta com OK
-                            enviar_resposta(conexao, resposta)                          # Envia a resposta
-                        else:
-                            resposta = f"HTTP/1.1 {resultado}\n\n"                      # Gera a mensagem de erro
-                            enviar_resposta(conexao, resposta)                          # Envia a resposta de erro
-                    except Exception:
-                        resposta = f"HTTP/1.1 {self.INTERNAL_SERVER_ERROR}\n\n"         # Envia a mensagem de resposta informando o erro
-                        enviar_resposta(conexao, resposta)                              # Envia a mensagem de resultado da ação
                 elif (str(informacoes_request[1]).upper() == self.ADM_MONITORAR_HIDROMETRO):
                     try:
                         resultado = executar.monitorar_hidrometro()
@@ -207,8 +204,7 @@ class ApiServidor():
                         enviar_resposta(conexao, resposta)              # Envia a mensagem de resultado da ação
                 elif (str(informacoes_request[1]).upper() == self.ADM_GERAR_FATURA): # Gerar Fatura
                     try:
-                        resultado = executar.gerar_fatura()
-                        print(resultado)                                             # Obtém o resultado da operação
+                        resultado = executar.gerar_fatura()                                             # Obtém o resultado da operação
                         resposta = f"HTTP/1.1 {resultado}\n\n"                                          # Resposta da requisição
                         enviar_resposta(conexao, resposta)                                              # # Envia a mensagem de resultado da ação
                     except Exception:
@@ -227,11 +223,12 @@ class ApiServidor():
         except KeyError:
             resposta = f"HTTP/1.1 {self.NOT_FOUND}\n\n"     # Envia a mensagem de resposta para o cliente informando o erro de matricula não encontrada
             enviar_resposta(conexao, resposta)              # Envia a mensagem de resultado da ação
-        except ValueError:     
-                resposta = f"HTTP/1.1 {self.NOT_ACCEPTABLE}\n\n{informacoes_request[-1]}"
-                enviar_resposta(conexao, resposta)
-        #except Exception as ex:
-        #    print("Erro com a conexão. Causa: ", ex.args)
+        except ValueError as ex:
+            print(f'value error. causa {ex.args}')     
+            resposta = f"HTTP/1.1 {self.NOT_ACCEPTABLE}"
+            enviar_resposta(conexao, resposta)
+        except Exception as ex:
+            print("Erro com a conexão. Causa: ", ex.args)
 
     def __decode_requisicao(self, requisicao: str):
         """ Decodifica a requisição recebida """
@@ -436,7 +433,7 @@ class ObterDados():
         """ Método responsável por bloquear um hidrômetro """
         try:
             df_usuarios = pd.read_csv("usuarios.csv", sep=',')
-            indice_usuario = self.__obter_indice_usuario(df_usuarios, self.__matricula)   # Obtém o indice do usuário na lista de clientes do sistema 
+            indice_usuario = self.__obter_indice_usuario(df_usuarios, self.__matricula)     # Obtém o indice do usuário na lista de clientes do sistema 
             if (bool(df_usuarios.iloc[indice_usuario]['pendencia'])):                       # Verifica se o usuário tem uma conta em aberto
                 if(self.__enviar_comando_hidrometro(self.DESLIGAR, self.__matricula)):
                     df_usuarios.at[indice_usuario, 'ativo'] = False                         # Seta cliente como desligado
@@ -485,7 +482,7 @@ class ObterDados():
         except IndexError:          # Caso não tenha registro de consumo nas datas
             return self.NOT_FOUND
         except Exception as e:      # Caso ocorra algum outro erro
-            print(e.args)
+            print(f'Erro ao obter o consumo da data especificada. Causa: {e.args}')
             return self.INTERNAL_SERVER_ERROR
     
     def __obter_consumo_fatura(self):
@@ -532,40 +529,42 @@ class ObterDados():
 
     def __enviar_comando_hidrometro(self, comando: str, matricula: str):
         """ Método responsável por enviar comandos para um hidrômetro """
-        self.__conectar()
-        resultado = self.__publish(comando, matricula)
-        self.cliente.loop_stop()
-        return resultado
+        self.__conectar()                               # Conecta ao broker
+        resultado = self.__publish(comando, matricula)  # Envia a mensagem
+        self.cliente.disconnect()                       # Desconecta do broker após enviar a mensagem
+        return resultado                                # Envia o resultado da operação de enviar mensagem
 
     
-    def __conectar(self):                               # Conectar com o servidor
+    def __conectar(self):                            
         """ Método para efetuar a conexão """
-        self.cliente = self.__connect_mqtt()
-        self.cliente.loop_start()
+        self.cliente = self.__connect_mqtt()    # Conecta com o broker
         
 
     def __connect_mqtt(self):
         def on_connect(client, userdata, flags, rc):
-            if rc == 0:
-                print("Connected to MQTT Broker!")
+            if rc == 0:         # Se conseguiu conectar com o broker
+                pass
             else:
-                print("Failed to connect, return code %d\n", rc)
+                print("Failed to connect, return code %d\n", rc)        # Senão conseguiu conectar com o broker, retorna o erro
 
         client = mqtt_client.Client(self.CLIENTE_ID)
         client.on_connect = on_connect
-        client.connect(self.HOST, self.PORT)
+        client.connect(self.HOST, self.PORT)                            # Conexão com o broker
         return client
     
     def __publish(self, dados, matricula):
         """ Envia os dados para o servidor """
-        result = self.cliente.publish(self.TOPIC + matricula, dados)
-        status = result[0]
-        if status == 0:
-            print(f"Send `{dados}` to topic `{self.TOPIC+matricula}`")
-            return True
-        else:
-            print(f"Failed to send message to topic {self.TOPIC+matricula}")
-            return False
+        try:
+            result = self.cliente.publish(self.TOPIC + matricula, dados)        # Envia os dados para o hidrômetro no tópico relacionado ao hidrômetro
+            status = result[0]
+            if status == 0:
+                print(f"Send `{dados}` to topic `{self.TOPIC+matricula}`")
+                return True                                                     # Caso a mensagem tenha sido enviada para o hidrômetro com sucesso
+            else:
+                print(f"Failed to send message to topic {self.TOPIC+matricula}")
+                return False                                                    # Caso a mensagem não tenha sido enviada para o hidrômetro
+        except:
+            return False                                                        # Caso ocorra alguma erro
     
     # ----------- Fim Métodos Privados ----------- #
     # ----------- Fim Métodos Auxiliares ----------- #

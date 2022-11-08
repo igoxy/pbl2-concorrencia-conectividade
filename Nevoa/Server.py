@@ -8,7 +8,6 @@ from time import sleep
 from paho.mqtt import client as mqtt_client
 import pandas as pd
 from pandas import DataFrame
-import numpy as np
 
 
 class Server:
@@ -16,20 +15,16 @@ class Server:
     LIGAR =     "2"         # Constante para o comando de ligar um hidrômetro
     DESLIGAR =  "1"         # Constante para o comando de desligar um hidrômetro
     #---------------------------------------------------------
-    #HOST_NUVEM = ''
-    #PORT_NUVEM = ''
-    #TOPIC_NUVEM = ''
-    TOPIC_NUVEM_MEDIA_ENVIAR = 'nuvem/dados/media/nevoa'
-    TOPIC_NUVEM_MEDIA_RECEBER = 'nuvem/dados/media/total'
-    TOPIC_NUVEM_TEMPO_VAZAO = 'nuvem/dados/tempo-vazao'
-    TOPIC_NEVOA_CONECTADA = 'nuvem/sistema/nevoas/conectada'
 
-    TOPIC_SERVIDOR = 'dados/hidrometro/servidor'
-    TOPIC_HIDROMETRO = 'dados/hidrometro/nevoa/'
+    TOPIC_NUVEM_MEDIA_ENVIAR = 'nuvem/dados/media/nevoa'        # Envia a média da névoa para a nuvem
+    TOPIC_NUVEM_MEDIA_RECEBER = 'nuvem/dados/media/total'       # Recebe da nuvem a média total
+    TOPIC_NUVEM_TEMPO_VAZAO = 'nuvem/dados/tempo-vazao'         # Recebe da nuvem a vazão e o período de tempo estabelecido
+    TOPIC_NEVOA_CONECTADA = 'nuvem/sistema/nevoas/conectada'    # Envia para a nuvem a identificação da névoa
+    TOPIC_HIDROMETRO = 'dados/hidrometro/nevoa/'                # Recebe os dados do hidrômetro
     
     TOPICS = []
     #----------------------------------------------------------
-    HOST = ''    # Endereço do broker
+    HOST = ''                  # Endereço do broker
     PORT =  1883               # Porta do broker
     
     CLIENTE_ID = f'python-mqtt-{random.randint(0, 1000)}'
@@ -51,7 +46,7 @@ class Server:
         self.HOST = broker
         self.TOPIC_HIDROMETRO = self.TOPIC_HIDROMETRO + identificacao_nevoa
         self.identificacao_nevoa = identificacao_nevoa
-        self.TOPICS  = [(self.TOPIC_NUVEM_MEDIA_ENVIAR, 0), (self.TOPIC_NUVEM_MEDIA_RECEBER, 0), (self.TOPIC_NUVEM_TEMPO_VAZAO, 0), (self.TOPIC_SERVIDOR, 0), (self.TOPIC_HIDROMETRO, 0)]
+        self.TOPICS  = [(self.TOPIC_NUVEM_MEDIA_RECEBER, 0), (self.TOPIC_NUVEM_TEMPO_VAZAO, 0), (self.TOPIC_HIDROMETRO, 0)]
         self.start()
         self.__consumo_clientes = consumo_clientes
         self.__carregar_dados()                 # carrega os dados
@@ -71,8 +66,6 @@ class Server:
                 media = self.__consumo_clientes['consumo'].mean()           # Obtém a média do consumo dos clientes
                 if math.isnan(media):   # Verifica se há uma média de valores válida, ou seja, há pelo menos o valor de consumo de um cliente no sistema
                     media = self.NAO_HA_MEDIA   # Atribui um valor negativo 
-                
-                print(f'a média calcula foi: {media}')
                 self.__enviar_media(media, self.identificacao_nevoa, self.TOPIC_NUVEM_MEDIA_ENVIAR)      # Envia a média para a nuvem   
             except Exception as ex:
                 print(f"Erro ao calcular a média. Causa {ex.args}")  
@@ -205,17 +198,18 @@ class Server:
 
     def __subscribe(self, client: mqtt_client):
         def on_message(client, userdata, msg):
-            print(f"Received {msg.payload.decode('utf-8')} from {msg.topic} topic")
             if (msg.topic == self.TOPIC_HIDROMETRO):
-                dados_json = json.loads(msg.payload.decode("utf-8"))          # Converte a string no padrão Json em dicionário
-                self.__armazenar_dados(dados_json)                       # Chama o método para o armazenamento dos dados recebidos
+                dados_json = json.loads(msg.payload.decode("utf-8"))            # Converte a string no padrão Json em dicionário
+                self.__armazenar_dados(dados_json)                              # Chama o método para o armazenamento dos dados recebidos
             elif (msg.topic == self.TOPIC_NUVEM_MEDIA_RECEBER):
+                print(f"Received {msg.payload.decode('utf-8')} from {msg.topic} topic")
                 self.__media_recebida(float(msg.payload.decode("utf-8")))
             elif (msg.topic == self.TOPIC_NUVEM_TEMPO_VAZAO):
+                print(f"Received {msg.payload.decode('utf-8')} from {msg.topic} topic")
                 dados_json = json.loads(msg.payload.decode("utf-8"))
                 self.__tempo_vazao(dados_json)
         
-        client.subscribe(self.TOPICS)    #topic
+        client.subscribe(self.TOPICS)    # Tópicos inscritos
         client.on_message = on_message
     
     def __publish(self, dados, topico):
