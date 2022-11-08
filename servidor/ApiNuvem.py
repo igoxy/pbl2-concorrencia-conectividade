@@ -8,8 +8,6 @@ import socket
 import pandas as pd
 import threading
 import requests
-from time import sleep
-import urllib.request
 
 
 class ApiNuvem():
@@ -34,9 +32,9 @@ class ApiNuvem():
     LOGIN_ADM = '/LOGIN_ADM'                                    # GET   -   OK
     LOGIN_USUARIO = '/LOGIN_USUARIO'                            # GET   -   OK
 
-    ADM_OBTER_HIDROMETROS_MAIOR_CONSUMO = '/ADMINISTRADOR/MAIOR_CONSUMO'     # GET - TESTAR
-    ADM_MONITORAR_HIDROMETRO = '/ADMINISTRADOR/MONITORAR_HIDROMETRO'         # GET - TESTAR
-    ADM_DEFINIR_CONSUMO_TEMPO = '/ADMINISTRADOR/CONSUMO_TEMPO'
+    ADM_OBTER_HIDROMETROS_MAIOR_CONSUMO = '/ADMINISTRADOR/MAIOR_CONSUMO'     # GET - OK
+    ADM_MONITORAR_HIDROMETRO = '/ADMINISTRADOR/MONITORAR_HIDROMETRO'         # GET - OK
+    ADM_DEFINIR_CONSUMO_TEMPO = '/ADMINISTRADOR/CONSUMO_TEMPO'               # POST - OK
     __colecao_threads = {}              # Pool de threads
 
     def __init__(self, host: str, port: int, broker: str):
@@ -302,15 +300,15 @@ class ObterDados():
     USER_CONSUMO_TOTAL = '/CLIENTE/CONSUMO/TOTAL'               # GET   -   OK
     USER_CONSUMO_ATUAL = '/CLIENTE/CONSUMO/FATURA_ATUAL'        # GET   -   OK
     USER_OBTER_FATURA = '/CLIENTE/OBTER_FATURA'                 # GET   -   OK
-    LISTAR_CLIENTES = '/LISTAR_CLIENTES'                        # GET   -   NÃO MUDOU
-    LOGIN_ADM = '/LOGIN_ADM'                                    # GET   -   NÃO MUDOU
-    LOGIN_USUARIO = '/LOGIN_USUARIO'                            # GET   -   NÃO MUDOU
+    LISTAR_CLIENTES = '/LISTAR_CLIENTES'                        # GET   -   OK
+    LOGIN_ADM = '/LOGIN_ADM'                                    # GET   -   OK
+    LOGIN_USUARIO = '/LOGIN_USUARIO'                            # GET   -   OK
 
-    ADM_OBTER_HIDROMETROS_MAIOR_CONSUMO = '/maior_consumo' #'/ADMINISTRADOR/MAIOR_CONSUMO'     # GET - TESTAR
+    ADM_OBTER_HIDROMETROS_MAIOR_CONSUMO = '/maior_consumo'      # GET   - OK
     
     # ------ MQTT -------
-    HOST = ''                   # Endereço do broker - broker.emqx.io
-    PORT =  1883               # Porta do broker - 1883
+    HOST = ''                   # Endereço do broker
+    PORT =  1883                # Porta do broker
     TOPIC = 'dados/hidrometro/servidor'
     CLIENTE_ID = f'python-mqtt-{random.randint(0, 1000)}'
     TOPIC_TEMPO_CONSUMO = 'nuvem/dados/tempo-vazao' 
@@ -458,10 +456,8 @@ class ObterDados():
         return self.__listar_clientes()
     
     def hidrometros_maior_consumo(self, dados: dict):
-        try:
-            headers = {'Content-type': 'application/json'}
+        try: 
             quantidade = int(dados['quantidade'])
-            dados_s = json.dumps(dados)
             arquivo = open('nevoas-conectadas.bin', 'rb')
             nevoas = pickle.load(arquivo)
             arquivo.close()
