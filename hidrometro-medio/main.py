@@ -35,9 +35,9 @@ def gerar_vazao() -> float:
             global pressao
             pressao = 0
         else:                                      
-            vazao = random.uniform(0.37, 0.66)  # Médio
+            vazao = random.uniform(0.34, 0.66)  # Médio
     else:
-        vazao = random.uniform(0.37, 0.66)      # Caso não tenha informado nenhum argumento válido
+        vazao = random.uniform(0.34, 0.66)      # Caso não tenha informado nenhum argumento válido
     
     return vazao
 
