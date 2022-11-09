@@ -72,7 +72,7 @@ Ao iniciar o servidor será solicitado o endereço do Broker ao qual o sistema d
 <h2  id="hidrometro">Hidrômetro</h2>
 
 <p  align="justify">
-O hidrômetro pode receber por parâmetro um indicador se deve consumir mais ou menos água e se deve simular um vazamento.
+O hidrômetro pode receber por parâmetro um indicador se deve consumir mais ou menos água e se deve simular um vazamento. Os parêmtros que podem ser fornecidos ao executar uma instância do hidrômetro são: <i>LENTO</i>, <i>MEDIO</i>, <i>RAPIDO</i> e <i>VAZAMENTO</i>. Caso o parâmetro <i>LENTO</i> seja fornecido a vazão do hidrômetro será gerada aleatoriamente dentro do intervalo de 0,01 m³/s até 0,33 m³/s. Já caso o parâmetro fornecido seja <i>MEDIO</i> a vazão deve ser um valor aleatório entre 0,34 m³/s e 0,66 m³/s. Enquanto que se o parâmetro fornecido for <i>RAPIDO</i> a vazão deve ser um valor aleatório entre 0,67 m³/s e 1,0 m³/s. Se parâmetro <i>VAZAMENTO</i> for fornecido o hidrômetro deve simular um possível vazamento e tem que apresentar uma vazão no mesmo intervalo que o definido pelo parâmetro <i>LENTO</i>.
 <br>
 <br>
 Os dados computados pelo hidrômetro são enviados para o névoa que processa e armazena as informações para serem consultadas posteriormente via API. Além disso, o hidrômetro também pode receber comandos do servidor da API para ser desligado, caso algum cliente esteja inadimplente e um administrador bloqueie o fornecimento de água do mesmo. Já caso um hidrômetro apresente-se desligado e o cliente pague o débito pendente, o hidrômetro é desbloqueado automaticamente. <br>
