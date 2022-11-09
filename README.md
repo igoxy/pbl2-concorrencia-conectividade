@@ -162,6 +162,6 @@ $ ./run-nevoa.sh                  #Executa o script
 Ao iniciar a névoa será solicitado a identificação da névoa. Posteriormente será solicitado o endereço do Broker MQTT que a névoa deve se conectar.
 </p>
 
-<h2 id="discente">Discentes</h2>
+<h2 id="discente">Discente</h2>
 
 - Igor Figueredo Soares
