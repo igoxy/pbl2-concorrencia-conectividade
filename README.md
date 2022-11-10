@@ -77,7 +77,9 @@ O hidrômetro pode receber por parâmetro um indicador se deve consumir mais ou 
 <br>
 Os dados computados pelo hidrômetro são enviados para o névoa que processa e armazena as informações para serem consultadas posteriormente via API. Além disso, o hidrômetro também pode receber comandos do servidor da API para ser desligado, caso algum cliente esteja inadimplente e um administrador bloqueie o fornecimento de água do mesmo. Já caso um hidrômetro apresente-se desligado e o cliente pague o débito pendente, o hidrômetro é desbloqueado automaticamente. <br>
 <br>
-Além disso, o hidrômetro pode ser desligado caso o seu consumo exceda a média de consumo de todos os hidrômetros ou ainda se consumir uma certa quantidade de água em um determinado intervalo de tempo.
+Além disso, o hidrômetro pode ser desligado caso o seu consumo exceda a média de consumo de todos os hidrômetros. 
+<br>
+O fornecimento de água também pode ser suspenso caso o usuário tenha consumido além uma certa quantidade de água em um determinado intervalo de tempo definido pelo administrador. A verificação se o usuário consumiu mais água que o definido no intervalo de tempo é feita por meio da vazão. Ao administrador definir o consumo máximo e o intervalo de tempo, é obtida uma vazão com essas informações (consumo máximo dividido pelo intervalo de tempo), então é verificado se algum hidrômetro apresenta a vazão superior à calculada com as informações fornecidas pelo administrador. Caso algum hidrômetro apresente a vazão superior, significa que ele atingirá o limite máximo definido pelo administrador e seu fornecimento de água é suspenso. O fornecimento de água do hidrômetro é liberado toda vez que a média dos consumos for calculada e, caso permaneça com a mesma vazão, será desligado novamente.
 <br>
 <br>
 São disponibilizadas 4 pastas para os hidrômetros: hidrometro-lento, hidrometro-medio, hidrometro-rapido e hidrometro-vazamento. Todas apresentam o mesmo código, apenas dispõe de Dockerfiles diferentes no que se refere ao parâmetro passado ao iniciar o hidrômetro. Isso é apenas para facilitar o processo de instância de um novo hidrômetro.
@@ -163,4 +165,3 @@ Ao iniciar a névoa será solicitado a identificação da névoa. Posteriormente
 <h2 id="discente">Discentes</h2>
 
 - Igor Figueredo Soares
-- Lokisley Oliveira
