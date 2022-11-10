@@ -79,6 +79,7 @@ Os dados computados pelo hidrômetro são enviados para o névoa que processa e 
 <br>
 Além disso, o hidrômetro pode ser desligado caso o seu consumo exceda a média de consumo de todos os hidrômetros. 
 <br>
+<br>
 O fornecimento de água também pode ser suspenso caso o usuário tenha consumido além uma certa quantidade de água em um determinado intervalo de tempo definido pelo administrador. A verificação se o usuário consumiu mais água que o definido no intervalo de tempo é feita por meio da vazão. Ao administrador definir o consumo máximo e o intervalo de tempo, é obtida uma vazão com essas informações (consumo máximo dividido pelo intervalo de tempo), então é verificado se algum hidrômetro apresenta a vazão superior à calculada com as informações fornecidas pelo administrador. Caso algum hidrômetro apresente a vazão superior, significa que ele atingirá o limite máximo definido pelo administrador e seu fornecimento de água é suspenso. O fornecimento de água do hidrômetro é liberado toda vez que a média dos consumos for calculada e, caso permaneça com a mesma vazão, será desligado novamente.
 <br>
 <br>
@@ -165,3 +166,4 @@ Ao iniciar a névoa será solicitado a identificação da névoa. Posteriormente
 <h2 id="discente">Discente</h2>
 
 - Igor Figueredo Soares
+- Lokisley Oliveira
